@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#1B1B1E">
+<meta name="theme-color" content="#1B1B1E"><link rel="icon" href="favicon.ico" sizes="48x48"><link rel="icon" type="image/png" href="favicon-192.png" sizes="192x192"><link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Troc Antic Débarras | Débarras Rapide 06, 83 &amp; Monaco, devis gratuit</title>
 
 <!-- SITE FINAL (dépôt GitHub) : placez ces balises dans le <head> de votre index.html.
@@ -501,7 +501,8 @@ h1{font-size:clamp(3.3rem,10vw,6.6rem);line-height:.98;letter-spacing:-.04em;fon
        <option value="">Choisir</option><option>Maison</option><option>Appartement</option><option>Succession</option><option>Diogène</option><option>Cave / Grenier</option><option>Local professionnel</option>
       </select></div>
      <div class="field"><label for="f-ville">Ville</label><input id="f-ville" name="ville" list="villes" autocomplete="address-level2" placeholder="Nice, Toulon, Monaco" required><datalist id="villes"></datalist></div>
-     <div class="field"><label for="f-tel">Téléphone</label><input id="f-tel" name="tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="06 12 34 56 78" required></div>
+     <div class="field"><label for="f-tel">Téléphone</label><input id="f-tel" name="tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="06 12 34 56 78" pattern="[0-9+ .()\-]{10,18}" title="Entrez un numéro valide, par exemple 06 12 34 56 78" required></div>
+     <div class="field" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden" aria-hidden="true"><label for="f-web">Ne pas remplir</label><input id="f-web" name="website" type="text" tabindex="-1" autocomplete="off"></div>
      <button class="btn btn-cta btn-xl btn-full" type="submit">Être rappelé sous 15 min</button>
      <p id="f-status" role="status" aria-live="polite"></p>
      <p class="fine">Gratuit et sans engagement. Votre numéro sert uniquement à vous rappeler. <a href="confidentialite.html" style="color:var(--accent)">En savoir plus</a></p>
@@ -723,10 +724,12 @@ var form=$("#devis-form"), st=$("#f-status");
 function setStatus(msg,cls){st.textContent=msg;st.className=cls||""}
 form.addEventListener("submit",function(e){
   e.preventDefault();
-  var d={bien:form.bien.value,ville:form.ville.value.trim(),tel:form.tel.value.trim()};
-  if(!d.bien||!d.ville||d.tel.replace(/\D/g,"").length<10){
-    setStatus("Vérifiez le type de bien, la ville et un numéro à 10 chiffres.","err"); return;
-  }
+  var d={bien:form.bien.value,ville:form.ville.value.trim(),tel:form.tel.value.trim(),_gotcha:form.website.value};
+  if(d._gotcha){ setStatus("Merci. Nous vous rappelons sous 15 minutes.","ok"); form.reset(); return; }
+  var num=d.tel.replace(/[\s.\-()]/g,"").replace(/^(\+33|0033)/,"0");
+  if(!d.bien||!d.ville){ setStatus("Choisissez le type de bien et indiquez la ville.","err"); return; }
+  if(!/^0[1-9]\d{8}$/.test(num)){ setStatus("Entrez un numéro valide, par exemple 06 12 34 56 78.","err"); return; }
+  d.tel=num.replace(/(\d{2})(?=\d)/g,"$1 ");
   if(!CFG.FORM_ENDPOINT){
     setStatus("Mode démonstration : la demande n’est pas encore transmise. Renseignez FORM_ENDPOINT dans le script pour recevoir les demandes.","demo"); return;
   }
